@@ -188,7 +188,8 @@ try:
         server.run(port=3000)
 
     def set_key_or_token(key: str, value: any):
-        if TOKENS_AND_IDS.get(key) is not None:
-            TOKENS_AND_IDS[key] = value
+        for __key in TOKENS_AND_IDS.keys():
+            if __key == key:
+                TOKENS_AND_IDS[__key] = value
 finally:
     pass
