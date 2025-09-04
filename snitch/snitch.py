@@ -13,33 +13,32 @@ WEBHOOK_DATA_SAMPLE = {
     "push": {
         "username": "{data[pusher][name]}",
         "info": {
-            "Commit Message": "{data[head_commit][message]}",
-            "Forced": "{data[forced]}"
-
+            "Commit Message": "{data[head_commit][message]}\n",
+            "`Forced": "{data[forced]}`"
         }
     },
     "pull_request": {
         "username": "{data[sender][name]}",
         "info": {
-            "Number": "{data[number]}",
-            "Action": "{data[action]}",
+            "Action": "{data[action]}\n",
+            "`Number": "{data[number]}`",
         }
     },
     "release": {
         "username": "{data[release][author][name]}",
         "info": {
             "Name": "{data[release][name]}",
-            "Id": "{data[release][id]}",
-            "Action": "{data[action]}",
-            "Pre Release": "{data[release][prerelease]}"
+            "Action": "{data[action]}\n",
+            "`Pre Release": "{data[release][prerelease]}`",
+            "`Id": "{data[release][id]}`",
         }
     },
     "issues": {
-        "username": "{data[sender][name]}",
+        "username": "{data[sender][login]}",
         "info": {
             "Name": "{data[issue][title]}",
-            "Id": "{data[issue][id]}",
-            "Author": "{data[issue][user][name]}"
+            "Author": "{data[issue][user][login]}\n",
+            "`Id": "{data[issue][id]}`",
         }
     }
 }
