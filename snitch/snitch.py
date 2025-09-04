@@ -13,7 +13,7 @@ WEBHOOK_DATA_SAMPLE = {
     "push": {
         "username": "{data[pusher][name]}",
         "info": {
-            "Commit Message": "{data[commits][0][message]}",
+            "Commit Message": "{data[head_commit][message]}",
             "Forced": "{data[forced]}"
 
         }
@@ -89,12 +89,14 @@ class Message:
 class Convert:
     @staticmethod
     def __write_data(sample: dict, data: dict) -> dict:
+        result = {}
+
         for key, value in sample.items():
             if type(value) == str:
-                sample[key] = value.format(data=data)
+                result[key] = value.format(data=data)
             elif type(value) == dict:
-                sample[key] = Convert.__write_data(sample=value, data=data)
-        return sample
+                result[key] = Convert.__write_data(sample=value, data=data)
+        return result
 
     @staticmethod
     def json_to_data(header: str, data: dict) -> dict:
