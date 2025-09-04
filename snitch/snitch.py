@@ -13,7 +13,7 @@ WEBHOOK_DATA_SAMPLE = {
     "push": {
         "username": "{data[pusher][name]}",
         "info": {
-            "Commit Message": "{data[head_commit][message]}",
+            "Commit Message": "{data[commits][0][message]}",
             "Forced": "{data[forced]}"
 
         }
