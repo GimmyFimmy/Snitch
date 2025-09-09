@@ -1,4 +1,4 @@
-import enum, asyncio, threading
+import enum, asyncio, threading, subprocess
 
 from flask import *
 from nextcord import *
@@ -6,7 +6,8 @@ from nextcord.ext.commands import *
 
 TOKENS_AND_IDS = {
     "BOT_TOKEN": None,
-    "CHANNEL_ID": None
+    "CHANNEL_ID": None,
+    "TUNNEL_ID": None
 }
 
 WEBHOOK_DATA_SAMPLE = {
@@ -47,6 +48,14 @@ WEBHOOK_MESSAGE_SAMPLE = {
     "title": "New {header} from {username}",
     "desc": "{key}: {value}\n"
 }
+
+class Task:
+    def __new__(cls, target: callable):
+        assert callable(target)
+
+        thread = threading.Thread(target=target, daemon=True)
+        thread.start()
+        return thread
 
 class ResponseType(enum.Enum):
     Ok = ["Ok", 200]
@@ -161,6 +170,31 @@ try:
     client = Client()
     server = Flask(__name__)
 
+    def __connect_to_server():
+        try:
+            server.run(port=3000)
+        except Exception as Result:
+            raise Exception(Result)
+
+    def __connect_to_client():
+        try:
+            Task(target=client.run)
+        except Exception as Result:
+            raise Exception(Result)
+
+    def __connect_to_tunnel():
+        try:
+            tunnel_id = TOKENS_AND_IDS.get('TUNNEL_ID')
+            assert tunnel_id
+
+            def target():
+                subprocess.call('npm install --global smee-client', shell=True)
+                subprocess.call(f'smee -u https://smee.io/{tunnel_id}', shell=True)
+
+            Task(target=target)
+        except Exception as Result:
+            raise Exception(Result)
+
     @server.route(rule="/", methods=["POST"])
     def webhook():
         method = Receive.method()
@@ -183,10 +217,9 @@ try:
             pass
 
     def start():
-        client_thread = threading.Thread(target=client.run, daemon=True)
-        client_thread.start()
-
-        server.run(port=3000)
+        __connect_to_tunnel()
+        __connect_to_client()
+        __connect_to_server()
 
     def set_key_or_token(key: str, value: any):
         for __key in TOKENS_AND_IDS.keys():
