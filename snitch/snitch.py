@@ -62,6 +62,8 @@ WEBHOOK_MESSAGE_SAMPLE = {"title": "New {header} from {username}", "desc": "{key
         
         * ResponseType - response data converted into enum
         
+        * CacheKeyType - cache keys converted into enum
+        
         * ResponseResult - convert raw data into response
         
         * Request - request data from url
