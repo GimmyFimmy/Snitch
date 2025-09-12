@@ -198,6 +198,8 @@ class Client:
             channel_id = CACHE.get(f"{header}_CHANNEL_ID")
 
             if channel_id:
+                channel_id = int(channel_id)
+
                 return self.client.get_channel(channel_id)
 
     def send(self, header: str, data: dict) -> ():
