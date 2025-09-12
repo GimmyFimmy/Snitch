@@ -102,6 +102,13 @@ class ResponseType(enum.Enum):
     AccessDenied = ["Access Denied", 403]
     UnexpectedError = ["Unexpected Error", 500]
 
+class CacheKeyType(enum.Enum):
+    DiscordToken = "DISCORD_TOKEN"
+
+    PushChannelId = "PUSH_CHANNEL_ID"
+    PullRequestChannelId = "PULL_REQUEST_CHANNEL_ID"
+    ReleaseChannelId = "RELEASE_CHANNEL_ID"
+    IssuesChannelId = "ISSUES_CHANNEL_ID"
 
 class ResponseResult:
     def __new__(cls, response_type: ResponseType, response="") -> Response:
@@ -180,7 +187,7 @@ class Client:
         self.client = Bot(command_prefix="/", intents=self.intents)
 
     def run(self) -> ():
-        token = CACHE.get("BOT_TOKEN")
+        token = CACHE.get(CacheKeyType.DiscordToken.value)
 
         return self.client.run(token)
 
@@ -290,8 +297,10 @@ def run() -> ():
     __connect_to_server()
 
 
-def set_key_value(key: str, value: any) -> ():
+def set_key_value(key: CacheKeyType, value: any) -> ():
     try:
-        CACHE[key] = value
+        assert type(key) == CacheKeyType
+
+        CACHE[key.value] = value
     except Exception as Result:
         raise Exception(Result)
