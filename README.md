@@ -1,4 +1,6 @@
 ![alt text](https://github.com/GimmyFimmy/Snitch/blob/dev/docs/banner.png)
+
+
 ```python
 # Initialize Snitch library
 from snitch import snitch
