@@ -149,7 +149,7 @@ class Message:
         assert type(title) == str
         assert type(desc) == str
 
-        return Embed(title=title, description=desc, color=Color.dark_purple())
+        return Embed(title=title, description=desc, color=Color.purple())
 
 
 class Convert:
