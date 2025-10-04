@@ -1,93 +1,29 @@
-"""
-    CLASS SNITCH
-        - Light Discord bot, which sends GitHub webhooks
-        - Created by Gimmy_Fimmy
-"""
-
-"""
-    LIBRARIES
-"""
-
 import enum, asyncio, threading, subprocess, requests
 
 from flask import *
 from nextcord import *
 from nextcord.ext.commands import *
 
-"""
-    DICTIONARIES
-        CACHE - dict for storing keys and ids
-        WEBHOOK_DATA_SAMPLE - dict with data samples for every supported header
-        WEBHOOK_MESSAGE_SAMPLE - dict with desc and title samples for embed message
-"""
-
 CACHE = {}
 
-WEBHOOK_DATA_SAMPLE = {
+SAMPLES = {
     "push": {
-        "username": "{data[pusher][name]}",
-        "info": {"Commit Message": "{data[head_commit][message]}\n", "`Forced": "{data[forced]}`"},
+        "title": "↗ push from {data[pusher][name]}",
+        "desc": "Commit Message: {data[head_commit][message]}\n\n`Forced: {data[forced]}`"
     },
     "pull_request": {
-        "username": "{data[sender][name]}",
-        "info": {
-            "Action": "{data[action]}\n",
-            "`Number": "{data[number]}`",
-        },
+        "title": "⤵ pull request from {data[sender][name]}",
+        "desc":"Action: {data[action]}\n\n`Number: {data[number]}`",
     },
     "release": {
-        "username": "{data[release][author][name]}",
-        "info": {
-            "Name": "{data[release][name]}",
-            "Action": "{data[action]}\n",
-            "`Pre Release": "{data[release][prerelease]}`",
-            "`Id": "{data[release][id]}`",
-        },
+        "title": "⬇ new release from {data[release][author][name]}",
+        "desc": "Name: {data[release][name]}\nAction: {data[action]}\n\n`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`",
     },
     "issues": {
-        "username": "{data[sender][login]}",
-        "info": {
-            "Name": "{data[issue][title]}",
-            "Author": "{data[issue][user][login]}\n",
-            "`Id": "{data[issue][id]}`",
-        },
-    },
+        "username": "⚠ {data[sender][login]}",
+        "desc": "Name: {data[issue][title]}\nAuthor: {data[issue][user][login]}\n\n`Id: {data[issue][id]}`"
+    }
 }
-
-WEBHOOK_MESSAGE_SAMPLE = {"title": "New {header} from {username}", "desc": "{key}: {value}\n"}
-
-"""
-    CLASSES
-        * _Task - threading class
-        
-        * ResponseType - response data converted into enum
-        
-        * CacheKeyType - cache keys converted into enum
-        
-        * ResponseResult - convert raw data into response
-        
-        * Request - request data from url
-            > redirected_url - returns redirected url
-            
-        * Receive - receive data
-            > method    - returns receive method (GET, POST)
-            > header    - returns message header (push, pull_request, ping and etc)
-            > json      - returns message itself
-        
-        * Message - create embed message from raw data
-        
-        * Convert - data convertion based on sample
-            > __write_data      - writes input data values in a sample
-            
-            > json_to_data      - converts raw data in webhook data
-            > data_to_embed     - converts webhook data in embed message
-            
-        * Client - class for controlling discord bot
-            > run           - run bot (BOT_TOKEN required)
-            > get_channel   - returns channel id based on header
-            > send          - send message in a specific channel safely
-"""
-
 
 class _Task:
     def __new__(cls, target: callable) -> threading.Thread:
@@ -153,35 +89,16 @@ class Message:
 
 
 class Convert:
-    @staticmethod
-    def __write_data(sample: dict, data: dict) -> dict:
-        result = {}
+    def __new__(cls, header: str, data: dict) -> Embed:
+        header_samples = SAMPLES.get(header)
 
-        for key, value in sample.items():
-            if type(value) == str:
-                result[key] = value.format(data=data)
-            elif type(value) == dict:
-                result[key] = Convert.__write_data(sample=value, data=data)
-        return result
+        title_sample = header_samples.get("title")
+        desc_sample = header_samples.get("desc")
 
-    @staticmethod
-    def json_to_data(header: str, data: dict) -> dict:
-        sample = WEBHOOK_DATA_SAMPLE.get(header)
-        return Convert.__write_data(sample=sample, data=data)
-
-    @staticmethod
-    def data_to_embed(header: str, data: dict) -> Embed:
-        title_sample = WEBHOOK_MESSAGE_SAMPLE.get("title")
-        desc_sample = WEBHOOK_MESSAGE_SAMPLE.get("desc")
-
-        username = data.get("username")
-        info = data.get("info")
-
-        title = str.format(title_sample, header=header, username=username)
-        desc = "".join(desc_sample.format(key=key, value=value) for key, value in info.items())
+        title = str.format(title_sample, data=data)
+        desc = str.format(desc_sample, data=data)
 
         return Message(title=title, desc=desc)
-
 
 class Client:
     def __init__(self):
@@ -207,29 +124,14 @@ class Client:
     def send(self, header: str, data: dict) -> ():
         if self.client.is_ready():
             target_channel = self.get_channel(header=header)
-
-            json_to_data = Convert.json_to_data(header=header, data=data)
-            data_to_embed = Convert.data_to_embed(header=header, data=json_to_data)
+            target_embed = Convert(header=header, data=data)
 
             return asyncio.run_coroutine_threadsafe(
-                target_channel.send(embed=data_to_embed), self.client.loop
+                target_channel.send(embed=target_embed), self.client.loop
             )
-
-
-"""
-    VARIABLES
-        client  - initialize Client class
-        server  - initialize Flask class
-"""
 
 client = Client()
 server = Flask(__name__)
-
-"""
-    WRAPPED METHODS
-        > webhook - receive webhooks and send messages
-"""
-
 
 @server.route(rule="/", methods=["POST"])
 def webhook():
@@ -251,14 +153,6 @@ def webhook():
         return ResponseResult(response_type=ResponseType.UnexpectedError, response=str(Reason))
     finally:
         pass
-
-
-"""
-    PRIVATE METHODS
-        > __connect_to_server   - startup Flask server
-        > __connect_to_client   - startup Discord bot
-        > __connect_to_tunnel   - startup Smee tunnel
-"""
 
 
 def __connect_to_server() -> ():
@@ -288,15 +182,7 @@ def __connect_to_tunnel() -> ():
         raise Exception(Result)
 
 
-"""
-    PUBLIC METHODS
-        > run               - startup everything
-        > set_key_value     - set key value in CACHE dict
-"""
-
-
 def run() -> ():
-
     __connect_to_tunnel()
     __connect_to_client()
     __connect_to_server()
