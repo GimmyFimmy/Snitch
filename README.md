@@ -1,9 +1,9 @@
 ![banner](/docs/banner.png)
 
 <div align="center">
-<h3>
+<h2>
     Application to send GitHub events in a specific Discord channels
-</h3>
+</h2>
 </div>
 
 ## Getting started
@@ -39,10 +39,14 @@
    ```commandline
    pip install -r requirements.txt
    ```
+   
+##
 
 ### Creating Discord Bot
 
 Information about how to create bot and get token can be found [here](https://discordpy.readthedocs.io/en/stable/discord.html)
+
+##
 
 ### Usage
 
@@ -52,7 +56,7 @@ Information about how to create bot and get token can be found [here](https://di
 First, we import **snitch** application. After that we call **run** method with **properties**.
 
 > [!NOTE]
-> Only **BOT_TOKEN** is required, You can choose the channel to which event(s) will be sent or even ignore some type of event(s), according to your preference.
+> Only **BOT_TOKEN** is required in **properties**, You can choose the channel to which event(s) will be sent or even ignore some type of event(s), according to your preference.
 
 ```python
 from snitch import *
@@ -65,6 +69,8 @@ Snitch.run(properties={
     "ISSUES_CHANNEL_ID": "YOUR CHANNEL ID HERE",
 })
 ```
+
+##
 
 ### Customization
 
@@ -92,7 +98,7 @@ _SAMPLES = {
 ```
 
 > [!NOTE]
-> To access [event data](https://docs.github.com/en/webhooks/webhook-events-and-payloads) use `{data[...]}`, to go to the next line use `\n`
+> To access [event data](https://docs.github.com/en/webhooks/webhook-events-and-payloads) use `{data[...]}`, to go to the next line use `\n`.
 
 ## Contribution
 Pull requests are welcome. For major changes, please open an issue first
