@@ -5,7 +5,7 @@ from asyncio import run_coroutine_threadsafe
 
 from requests import get
 from http import HTTPStatus
-from flask import request, Flask
+from flask import request, Flask, jsonify
 
 from nextcord import Intents, Embed, Color
 from nextcord.ext.commands import Bot
@@ -149,19 +149,19 @@ class Snitch:
         method = _Receive.method()
 
         if method != "POST":
-            return HTTPStatus.METHOD_NOT_ALLOWED.value
+            return jsonify({"error": "POST method only allowed"}), HTTPStatus.METHOD_NOT_ALLOWED.value
 
         try:
             data = _Receive.json()
             header = _Receive.header()
 
-            if data and header:
+            if data and header and header in _SAMPLES:
                 client.send(header=header, data=data)
-                return HTTPStatus.OK.value
+                return jsonify("OK"), HTTPStatus.OK.value
             else:
-                return HTTPStatus.BAD_REQUEST.value
+                return jsonify({"error": "Wrong header or data"}), HTTPStatus.BAD_REQUEST.value
         except Exception as Reason:
-            return HTTPStatus.INTERNAL_SERVER_ERROR.value, Reason
+            return jsonify({"error": Reason}), HTTPStatus.INTERNAL_SERVER_ERROR.value
 
     @staticmethod
     def run(properties: dict) -> ():
