@@ -15,11 +15,11 @@ _CACHE = {}
 _SAMPLES = {
     "push": {
         "title": "↗ push from {data[pusher][name]}",
-        "desc": "Commit Message: {data[head_commit][message]}\n\n`Forced: {data[forced]}`"
+        "desc": "Commit Message: {data[head_commit][message]}\n\n`Forced: {data[forced]}`",
     },
     "pull_request": {
         "title": "⤵ pull request from {data[sender][name]}",
-        "desc":"Action: {data[action]}\n\n`Number: {data[number]}`",
+        "desc": "Action: {data[action]}\n\n`Number: {data[number]}`",
     },
     "release": {
         "title": "⬇ new release from {data[release][author][name]}",
@@ -27,9 +27,10 @@ _SAMPLES = {
     },
     "issues": {
         "username": "⚠ {data[sender][login]}",
-        "desc": "Name: {data[issue][title]}\nAuthor: {data[issue][user][login]}\n\n`Id: {data[issue][id]}`"
-    }
+        "desc": "Name: {data[issue][title]}\nAuthor: {data[issue][user][login]}\n\n`Id: {data[issue][id]}`",
+    },
 }
+
 
 class _Task:
     def __new__(cls, target: callable) -> Thread:
@@ -39,6 +40,7 @@ class _Task:
         thread.start()
         return thread
 
+
 class _Request:
     @staticmethod
     def redirected_url(url: str) -> str:
@@ -47,6 +49,7 @@ class _Request:
         if response.status_code == 200:
             url = response.url
             return url
+
 
 class _Receive:
     @staticmethod
@@ -82,6 +85,7 @@ class _Convert:
 
         return _Message(title=title, desc=desc)
 
+
 class _Client:
     def __init__(self):
         self.intents = Intents.all()
@@ -112,8 +116,10 @@ class _Client:
                 target_channel.send(embed=target_embed), self.client.loop
             )
 
+
 client = _Client()
 server = Flask(__name__)
+
 
 class Snitch:
     @staticmethod
@@ -149,7 +155,10 @@ class Snitch:
         method = _Receive.method()
 
         if method != "POST":
-            return jsonify({"error": "POST method only allowed"}), HTTPStatus.METHOD_NOT_ALLOWED.value
+            return (
+                jsonify({"error": "POST method only allowed"}),
+                HTTPStatus.METHOD_NOT_ALLOWED.value,
+            )
 
         try:
             data = _Receive.json()
@@ -159,7 +168,10 @@ class Snitch:
                 client.send(header=header, data=data)
                 return jsonify("OK"), HTTPStatus.OK.value
             else:
-                return jsonify({"error": "Wrong header or data"}), HTTPStatus.BAD_REQUEST.value
+                return (
+                    jsonify({"error": "Wrong header or data"}),
+                    HTTPStatus.BAD_REQUEST.value,
+                )
         except Exception as Reason:
             return jsonify({"error": Reason}), HTTPStatus.INTERNAL_SERVER_ERROR.value
 
