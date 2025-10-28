@@ -1,4 +1,4 @@
-<img src="/docs/banner.png" width=50% height=50% align="center">
+<center><img src="/docs/banner.png" width=75% height=75%></center>
 
 ##
 
