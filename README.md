@@ -1,4 +1,4 @@
-<div style="text-align: center"><img src="/docs/banner.png" width=75% height=75%></div>
+<div style="display: flex; justify-content: center;"><img src="/docs/banner.png" width=75% height=75%></div>
 
 ##
 
