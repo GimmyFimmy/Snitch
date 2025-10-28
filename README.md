@@ -1,4 +1,4 @@
-![banner](/docs/banner.png)
+<img src="/docs/banner.png" width=50% height=50% align="center">
 
 ##
 
