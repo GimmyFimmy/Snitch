@@ -72,6 +72,18 @@ Snitch.run(properties={
 
 ##
 
+### Creating GitHub webhook
+
+Information about how to create repository webhook can be found [here](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks)
+
+> [!NOTE]
+> After running your program, a **payload link** will appear in console (example: `https://smee.io/Ab7xK9mNpQr2w`).
+
+> [!WARNING]
+> This **payload link** must be pasted in your repository webhook. Otherwise, you will not receive event(s).
+
+##
+
 ### Customization
 
 You can also change **types of events**, their **titles** and **descriptions** in a `snitch/snitch.py` file. This is how it looks:
