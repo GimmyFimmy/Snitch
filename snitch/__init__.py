@@ -1,1 +1,1 @@
-from snitch.snitch import *
+from snitch.snitch import Snitch
