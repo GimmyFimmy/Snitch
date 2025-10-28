@@ -3,7 +3,7 @@
 ##
 
 <div align="center">
-Application to send GitHub events in a specific Discord channels
+Application to send GitHub events in a specific Discord channels.
 </div>
 
 ## Getting started
@@ -44,7 +44,7 @@ Application to send GitHub events in a specific Discord channels
 
 ### Creating Discord Bot
 
-Information about how to create bot and get token can be found [here](https://discordpy.readthedocs.io/en/stable/discord.html)
+Information about how to create bot and get token can be found [here](https://discordpy.readthedocs.io/en/stable/discord.html).
 
 ##
 
@@ -69,6 +69,18 @@ Snitch.run(properties={
     "ISSUES_CHANNEL_ID": "YOUR CHANNEL ID HERE",
 })
 ```
+
+##
+
+### Creating GitHub webhook
+
+Information about how to create repository webhook can be found [here](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks).
+
+> [!NOTE]
+> After running your program, a **payload link** will appear in console (example: `https://smee.io/Ab7xK9mNpQr2w`).
+
+> [!WARNING]
+> This **payload link** must be pasted in your repository webhook. Otherwise, you will not receive event(s).
 
 ##
 
