@@ -1,9 +1,9 @@
 ![banner](/docs/banner.png)
 
+##
+
 <div align="center">
-<h2>
-    Application to send GitHub events in a specific Discord channels
-</h2>
+Application to send GitHub events in a specific Discord channels
 </div>
 
 ## Getting started
@@ -74,7 +74,7 @@ Snitch.run(properties={
 
 ### Customization
 
-You can also change types of events, their titles and descriptions in a `snitch/snitch.py` file. This is how it looks:
+You can also change **types of events**, their **titles** and **descriptions** in a `snitch/snitch.py` file. This is how it looks:
 
 ```python
 _SAMPLES = {
