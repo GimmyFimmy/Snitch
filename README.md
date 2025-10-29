@@ -10,7 +10,7 @@ Application to send GitHub events in a specific Discord channels.
 
 ### Software requirements
 
-``Python 3.10``
+``Python 3.10`` ``Windows 10/11``
 
 ##
 
