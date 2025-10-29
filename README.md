@@ -91,21 +91,21 @@ You can also change **types of events**, their **titles** and **descriptions** i
 ```python
 _SAMPLES = {
     "push": {
-        "title": "↗ push from {data[pusher][name]}",
-        "desc": "Commit Message: {data[head_commit][message]}\n\n`Forced: {data[forced]}`"
+        "title": "↗ Push from {data[pusher][name]}",
+        "desc": "`Commit Messages:`\n{data[head_commit][message]}\n\n`Forced: {data[forced]}`",
     },
     "pull_request": {
-        "title": "⤵ pull request from {data[sender][name]}",
-        "desc":"Action: {data[action]}\n\n`Number: {data[number]}`",
+        "title": "⤵ {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
+        "desc": "`Number: {data[number]}`",
     },
     "release": {
-        "title": "⬇ new release from {data[release][author][name]}",
-        "desc": "Name: {data[release][name]}\nAction: {data[action]}\n\n`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`",
+        "title": "⬇ {data[release][name]} was *{data[action]}* by {data[release][author][login]}",
+        "desc": "`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`",
     },
     "issues": {
-        "username": "⚠ {data[sender][login]}",
-        "desc": "Name: {data[issue][title]}\nAuthor: {data[issue][user][login]}\n\n`Id: {data[issue][id]}`"
-    }
+        "title": "⚠ {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
+        "desc": "`Id: {data[issue][id]}`",
+    },
 }
 ```
 
