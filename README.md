@@ -92,7 +92,7 @@ You can also change **types of events**, their **titles** and **descriptions** i
 _SAMPLES = {
     "push": {
         "title": "↗ Push from {data[pusher][name]}",
-        "desc": "`Commit Messages:`\n{data[head_commit][message]}\n\n`Forced: {data[forced]}`",
+        "desc": "`Commit Messages: {data[head_commit][message]}`\n`Forced: {data[forced]}`",
     },
     "pull_request": {
         "title": "⤵ {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
