@@ -51,36 +51,28 @@ Information about how to create bot and get token can be found [here](https://di
 ### Usage
 
 > [!CAUTION]
-> This program is for personal use only. Do not share your bot tokens or text channel IDs with anyone.
+> This program is for personal use only. Do not share your tokens or text channel IDs with anyone.
 
 First, we import **snitch** application. After that we call **run** method with **properties**.
 
 > [!NOTE]
-> Only **BOT_TOKEN** is required in **properties**, You can choose the channel to which event(s) will be sent or even ignore some type of event(s), according to your preference.
+> You can choose the channel to which event(s) will be sent or even ignore some type of event(s), according to your preference.
 
 ```python
 from snitch import *
 
 Snitch.run(properties={
-    "BOT_TOKEN": "YOUR TOKEN HERE (REQUIRED)",
-    "PUSH_CHANNEL_ID": "YOUR CHANNEL ID HERE",
-    "PULL_REQUEST_CHANNEL_ID": "YOUR CHANNEL ID HERE",
-    "RELEASE_CHANNEL_ID": "YOUR CHANNEL ID HERE",
-    "ISSUES_CHANNEL_ID": "YOUR CHANNEL ID HERE",
+   "USER_REPO": "YOUR USERNAME/REPOSITORY HERE (REQUIRED) (EXAMPLE: GimmyFimmy/Snitch)",
+   
+   "GITHUB_TOKEN": "YOUR TOKEN HERE (REQUIRED)",
+   "BOT_TOKEN": "YOUR TOKEN HERE (REQUIRED)",
+   
+   "PUSH_CHANNEL_ID": "YOUR CHANNEL ID HERE",
+   "PULL_REQUEST_CHANNEL_ID": "YOUR CHANNEL ID HERE",
+   "RELEASE_CHANNEL_ID": "YOUR CHANNEL ID HERE",
+   "ISSUES_CHANNEL_ID": "YOUR CHANNEL ID HERE",
 })
 ```
-
-##
-
-### Creating GitHub webhook
-
-Information about how to create repository webhook can be found [here](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks).
-
-> [!NOTE]
-> After running your program, a **payload link** will appear in console (example: `https://smee.io/Ab7xK9mNpQr2w`).
-
-> [!WARNING]
-> This **payload link** must be pasted in your repository webhook. Otherwise, you will not receive event(s).
 
 ##
 
