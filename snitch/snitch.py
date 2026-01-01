@@ -54,7 +54,29 @@ _SAMPLES = {
     },
 }
 
+_FORMATS = {
+    0: "\033[92m\033[1m{text}\033[0m",
+    1: "\033[91m\033[1m{text}\033[0m",
+}
+
 _URL = "https://api.github.com/repos/{user_repo}/hooks"
+
+
+class _Debug:
+    def __new__(
+        cls, text: str, level: str = 0
+    ) -> ():
+        assert (
+            type(level) == int
+            and level in _FORMATS
+        )
+
+        sample = _FORMATS.get(level)
+        formatted_text = str.format(
+            sample, text=f"[SNITCH]: {text}"
+        )
+
+        print(formatted_text)
 
 
 class _Task:
@@ -102,7 +124,7 @@ class _Request:
             response.raise_for_status()
             return response.json()
         except exceptions.HTTPError as result:
-            print(f"[!] {result}")
+            _Debug(result, 1)
 
     @staticmethod
     def delete(
@@ -119,7 +141,10 @@ class _Request:
             201,
             204,
         ]:
-            print(f"[!] Delete error: {response.status_code}")
+            _Debug(
+                f"Delete Error: {response.status_code}",
+                1,
+            )
 
 
 class _Receive:
@@ -129,7 +154,9 @@ class _Receive:
 
     @staticmethod
     def header() -> str:
-        return request.headers.get("X-Github-Event")
+        return request.headers.get(
+            "X-Github-Event"
+        )
 
     @staticmethod
     def json() -> dict:
@@ -206,12 +233,16 @@ class _Client:
         header = str.upper(header)
 
         if self.client.is_ready():
-            channel_id = _CACHE.get(f"{header}_CHANNEL_ID")
+            channel_id = _CACHE.get(
+                f"{header}_CHANNEL_ID"
+            )
 
             if channel_id:
                 channel_id = int(channel_id)
 
-                return self.client.get_channel(channel_id)
+                return self.client.get_channel(
+                    channel_id
+                )
 
     def send(
         self,
@@ -219,7 +250,9 @@ class _Client:
         data: dict,
     ) -> ():
         if self.client.is_ready():
-            target_channel = self.get_channel(header=header)
+            target_channel = self.get_channel(
+                header=header
+            )
             target_embed = _Convert(
                 header=header,
                 data=data,
@@ -227,11 +260,16 @@ class _Client:
 
             if target_channel and target_embed:
                 return run_coroutine_threadsafe(
-                    target_channel.send(embed=target_embed),
+                    target_channel.send(
+                        embed=target_embed
+                    ),
                     self.client.loop,
                 )
             else:
-                print("[-] No target channel or embed message")
+                _Debug(
+                    "Missing target_channel/target_embed Error",
+                    1,
+                )
 
 
 class GitHub:
@@ -276,12 +314,12 @@ class GitHub:
             webhook_id = result.get("id")
             _CACHE["WEBHOOK_ID"] = webhook_id
 
-            print(f"[+] Created GitHub webhook with id: {webhook_id}")
+            _Debug(
+                f"Created GitHub webhook with id: {webhook_id}"
+            )
 
     @staticmethod
     def remove_webhook() -> ():
-        print(f"[*] Removing GitHub webhook...")
-
         url = GitHub.__format_url()
 
         headers = {
@@ -301,60 +339,49 @@ server = Flask(__name__)
 class Snitch:
     @staticmethod
     def __connect_to_server() -> ():
-        try:
-            print(f"[+] Connected to the Web-Server with port: 3000")
-
-            server.run(port=3000)
-        except Exception as Result:
-            print(f"[!] {Result}")
+        _Debug(
+            "Connected to the Web-Server with port: 3000"
+        )
+        server.run(port=3000)
 
     @staticmethod
     def __connect_to_client() -> ():
-        print(f"[*] Initializing Discord bot...")
-
-        try:
-            _Task(target=client.run)
-        except Exception as Result:
-            print(f"[!] {Result}")
+        _Task(target=client.run)
 
     @staticmethod
     def __connect_to_tunnel() -> ():
-        print(f"[*] Connecting to the tunnel...")
+        url = _Request.redirected_url(
+            "https://smee.io/new"
+        )
+        _CACHE["PAYLOAD_URL"] = url
 
-        try:
-            url = _Request.redirected_url("https://smee.io/new")
-            _CACHE["PAYLOAD_URL"] = url
+        _Debug(
+            f"Connected to the tunnel with link: {url}"
+        )
 
-            print(f"[+] Connected to the tunnel with link: {url}")
+        def target():
+            call(
+                "npm install --global smee-client",
+                shell=True,
+            )
+            call(
+                f"smee -u {url}",
+                shell=True,
+            )
 
-            def target():
-                call(
-                    "npm install --global smee-client",
-                    shell=True,
-                )
-                call(
-                    f"smee -u {url}",
-                    shell=True,
-                )
-
-            _Task(target=target)
-        except Exception as Result:
-            print(f"[!] {Result}")
+        _Task(target=target)
 
     @staticmethod
     def __connect_to_github() -> ():
-        print(f"[*] Creating GitHub webhook...")
-
-        try:
-            GitHub.add_webhook()
-            register(GitHub.remove_webhook)
-        except Exception as Result:
-            print(f"[!] {Result}")
+        GitHub.add_webhook()
+        register(GitHub.remove_webhook)
 
     @staticmethod
     @client.client.event
     async def on_ready() -> ():
-        print(f"[+] Initialized Discord bot with token: {_CACHE.get('BOT_TOKEN')}")
+        _Debug(
+            f"Initialized Discord bot with token: {_CACHE.get('BOT_TOKEN')}"
+        )
 
     @staticmethod
     @server.route(
@@ -366,7 +393,11 @@ class Snitch:
 
         if method != "POST":
             return (
-                jsonify({"error": "POST method only allowed"}),
+                jsonify(
+                    {
+                        "error": "POST method only allowed"
+                    }
+                ),
                 HTTPStatus.METHOD_NOT_ALLOWED.value,
             )
 
@@ -374,7 +405,11 @@ class Snitch:
             data = _Receive.json()
             header = _Receive.header()
 
-            if data and header and header in _SAMPLES:
+            if (
+                data
+                and header
+                and header in _SAMPLES
+            ):
                 client.send(
                     header=header,
                     data=data,
@@ -385,7 +420,11 @@ class Snitch:
                 )
             else:
                 return (
-                    jsonify({"error": "Wrong header or data"}),
+                    jsonify(
+                        {
+                            "error": "Wrong header or data"
+                        }
+                    ),
                     HTTPStatus.BAD_REQUEST.value,
                 )
         except Exception as Reason:
@@ -404,7 +443,10 @@ class Snitch:
         ) in properties.items():
             _CACHE[key] = value
 
-        Snitch.__connect_to_tunnel()
-        Snitch.__connect_to_github()
-        Snitch.__connect_to_client()
-        Snitch.__connect_to_server()
+        try:
+            Snitch.__connect_to_tunnel()
+            Snitch.__connect_to_github()
+            Snitch.__connect_to_client()
+            Snitch.__connect_to_server()
+        except Exception as result:
+            _Debug(result, 1)
