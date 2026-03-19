@@ -78,26 +78,26 @@ Snitch.run(properties={
 
 ### Customization
 
-You can also change **types of events**, their **titles** and **descriptions** in a `snitch/snitch.py` file. This is how it looks:
+You can also change **types of events**, their **titles** and **descriptions** in a `snitch/responses/events.json` file. This is how it looks:
 
-```python
-_SAMPLES = {
+```json
+{
     "push": {
-        "title": "↗ Push from {data[pusher][name]}",
-        "desc": "`Commit Messages: {data[head_commit][message]}`\n`Forced: {data[forced]}`",
+        "title": "\u2197 Push from {data[pusher][name]}",
+        "desc": "`Commit Messages: {data[head_commit][message]}`\n`Forced: {data[forced]}`"
     },
     "pull_request": {
-        "title": "⤵ {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
-        "desc": "`Number: {data[number]}`",
+        "title": "\u2935 {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
+        "desc": "`Number: {data[number]}`"
     },
     "release": {
-        "title": "⬇ {data[release][name]} was *{data[action]}* by {data[release][author][login]}",
-        "desc": "`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`",
+        "title": "\u2b07 {data[release][name]} was *{data[action]}* by {data[release][author][login]}",
+        "desc": "`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`"
     },
     "issues": {
-        "title": "⚠ {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
-        "desc": "`Id: {data[issue][id]}`",
-    },
+        "title": "\u26a0 {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
+        "desc": "`Id: {data[issue][id]}`"
+    }
 }
 ```
 
