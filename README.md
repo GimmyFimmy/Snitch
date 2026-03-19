@@ -12,7 +12,7 @@ GitHub repo → smee.io tunnel → Flask server → Discord bot → your channel
 
 Snitch automatically creates a GitHub webhook for your repository on startup and removes it on exit. Events are forwarded as Discord embeds to whichever channels you configure in `events.json`.
 
----
+``Python 3.10`` ``Windows 10/11``
 
 ## Requirements
 
