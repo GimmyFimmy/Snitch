@@ -1,0 +1,31 @@
+{
+    "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+    },
+    "push": {
+        "channel_id": 0,
+
+        "title": "\u2197 Push from {data[pusher][name]}",
+        "desc": "`Commit Messages: {data[head_commit][message]}`\n`Forced: {data[forced]}`"
+    },
+    "pull_request": {
+        "channel_id": 0,
+
+        "title": "\u2935 {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
+        "desc": "`Number: {data[number]}`"
+    },
+    "release": {
+        "channel_id": 0,
+
+        "title": "\u2b07 {data[release][name]} was *{data[action]}* by {data[release][author][login]}",
+        "desc": "`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`"
+    },
+    "issues": {
+        "channel_id": 0,
+
+        "title": "\u26a0 {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
+        "desc": "`Id: {data[issue][id]}`"
+    }
+}
