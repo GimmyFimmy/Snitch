@@ -1,6 +1,8 @@
-# Snitch
+![banner](docs/banner.png)
 
-[![Documentation](https://img.shields.io/badge/docs-online-7941e7?style=flat-square)](https://GimmyFimmy.github.io/Snitch/)
+<div align="center">
+
+[![Documentation](https://img.shields.io/badge/docs-online-4ade80?style=flat-square)](https://GimmyFimmy.github.io/Snitch/)
 [![Python](https://img.shields.io/badge/language-Python-60a5fa?style=flat-square)]()
 [![Flask](https://img.shields.io/badge/server-Flask-f87171?style=flat-square)]()
 [![Discord](https://img.shields.io/badge/bot-nextcord-a87ef5?style=flat-square)]()
@@ -17,7 +19,7 @@ GitHub repo ──► smee.io tunnel ──► Flask server ──► Discord bo
 
 ## Example
 
-`your_code.py`
+`main.py`
 ```python
 from snitch import Snitch
 
@@ -48,6 +50,14 @@ For the full API reference, configuration options, and more examples, see the **
 
 ---
 
+## Requirements
+
+- Python `3.10+`
+- Node.js (used internally for `smee-client`)
+- Windows `10/11`
+
+---
+
 ## Project structure
 
 ```
@@ -72,14 +82,6 @@ snitch/
 
 ``Python 3.10`` ``Windows 10/11``
 
-## Requirements
-
-- Python `3.10+`
-- Node.js (used internally for `smee-client`)
-- Windows 10/11
-
----
-
 ## Contributing
 
 Contributions are welcome. If you find a bug, have a feature idea, or want to improve the docs, feel free to open an issue or a pull request.
@@ -92,4 +94,4 @@ A few things to keep in mind before submitting:
 
 - **One thing per PR.** Focused pull requests are easier to review and faster to merge.
 
-If you're unsure whether an idea fits, open an issue first and we can discuss it before you write any code.
+If you're unsure whether an idea fits, open an issue first so we can discuss it before you write any code.
