@@ -21,8 +21,8 @@ GitHub repo ──► smee.io tunnel ──► Flask server ──► Discord bo
 
 ## Example
 
+`main.py`
 ```python
-# main.py
 from snitch import Snitch
 
 Snitch()
@@ -56,7 +56,7 @@ For the full API reference, configuration options, and more examples, see the **
 
 - Python `3.10+`
 - Node.js (used internally for `smee-client`)
-- Windows 10/11
+- Windows `10/11`
 
 ---
 
@@ -96,4 +96,4 @@ A few things to keep in mind before submitting:
 
 - **One thing per PR.** Focused pull requests are easier to review and faster to merge.
 
-If you're unsure whether an idea fits, open an issue first and we can discuss it before you write any code.
+If you're unsure whether an idea fits, open an issue first so we can discuss it before you write any code.
