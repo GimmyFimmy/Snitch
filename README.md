@@ -26,8 +26,8 @@ from snitch import Snitch
 Snitch()
 ```
 
+`snitch/config/events.json`
 ```json
-// snitch/config/events.json
 {
     "color": { "r": 121, "g": 65, "b": 231 },
 
