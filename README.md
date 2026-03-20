@@ -1,9 +1,13 @@
 ![banner](docs/banner.png)
 
+<div align="center">
+
 [![Documentation](https://img.shields.io/badge/docs-online-7941e7?style=flat-square)](https://GimmyFimmy.github.io/Snitch/)
 [![Python](https://img.shields.io/badge/language-Python-60a5fa?style=flat-square)]()
 [![Flask](https://img.shields.io/badge/server-Flask-f87171?style=flat-square)]()
 [![Discord](https://img.shields.io/badge/bot-nextcord-a87ef5?style=flat-square)]()
+
+</div>
 
 Snitch forwards GitHub webhook events to Discord channels as rich embeds. It registers a webhook on your repository at startup, tunnels incoming requests via smee.io, and removes the webhook automatically on exit.
 
