@@ -72,7 +72,7 @@ snitch/
 │   ├── tunnel.py           ← smee.io tunnel
 │   ├── webhook.py          ← GitHub webhook lifecycle
 │   ├── client.py           ← Discord bot + embed builder
-│   ├── server.py           ← Flask server, POST /
+│   ├── server.py           ← Flask server, POST
 │   └── utils/
 │       ├── __env.py
 │       ├── __json.py
