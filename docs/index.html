@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snitch — GitHub → Discord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #0b0d0f;
+    --bg2:         #111417;
+    --bg3:         #181c20;
+    --border:      #1e2428;
+    --border2:     #252c32;
+    --text:        #e8eaec;
+    --muted:       #6b7680;
+    --accent:      #7941e7;
+    --accent2:     #6530c9;
+    --accent-dim:  #7941e71a;
+    --accent-soft: #7941e733;
+    --tag-bg:      #1e1530;
+    --tag-text:    #a87ef5;
+    --mono:        'DM Mono', monospace;
+    --sans:        'DM Sans', sans-serif;
+    --display:     'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 268px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 2rem;
+  }
+
+  .sidebar-logo {
+    padding: 1.4rem 1.4rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .logo-text .name {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .logo-text .tagline {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .nav-section { padding: 0.2rem 1rem 0.4rem; }
+
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0.5rem 0.5rem 0.25rem;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .nav-link:hover { color: var(--text); background: var(--bg3); }
+  .nav-link.active { color: var(--accent); background: var(--accent-dim); }
+
+  .nav-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--border2);
+    flex-shrink: 0;
+  }
+  .nav-link.active .nav-dot { background: var(--accent); }
+
+  .nav-chip {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+  }
+
+  /* ── MAIN ── */
+  .main { flex: 1; padding: 4rem 5rem 8rem; min-width: 0; }
+
+  /* ── HERO ── */
+  .hero {
+    margin-bottom: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #2d1f4a;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-desc {
+    font-size: 15.5px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.85;
+    margin-bottom: 1.5rem;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .flow-node {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .flow-arrow { color: var(--accent); font-size: 1rem; }
+
+  .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none;
+    font-family: var(--sans);
+  }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 4rem; scroll-margin-top: 2rem; animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2rem 0 0.75rem;
+  }
+
+  p { color: #9aa3ad; margin-bottom: 1rem; line-height: 1.8; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── CODE ── */
+  pre {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    margin: 1rem 0 1.5rem;
+  }
+
+  pre code { font-family: var(--mono); font-size: 13px; line-height: 1.8; color: var(--text); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--tag-text);
+  }
+
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+
+  .kw  { color: #a78bfa; }
+  .fn  { color: #7941e7; }
+  .str { color: #4ade80; }
+  .num { color: #fbbf24; }
+  .cm  { color: #4b5563; font-style: italic; }
+
+  /* ── FEATURE GRID ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin: 1.5rem 0;
+  }
+
+  .feature-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    transition: border-color 0.15s;
+  }
+  .feature-card:hover { border-color: var(--accent-soft); }
+  .feature-icon { font-size: 18px; margin-bottom: 8px; display: block; }
+  .feature-card h4 { font-family: var(--display); font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .feature-card p { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+  /* ── API CARDS ── */
+  .api-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .api-card:hover { border-color: var(--accent-soft); }
+
+  .api-header {
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .api-name { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--accent); }
+  .api-sig  { font-family: var(--mono); font-size: 12px; color: var(--muted); flex: 1; min-width: 180px; }
+  .api-body { padding: 1rem 1.2rem; }
+  .api-body p { font-size: 13.5px; margin-bottom: 0.5rem; }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .tag-class  { background: #1e1530; color: #a87ef5; }
+  .tag-config { background: #1a2a1e; color: #4ade80; }
+  .tag-secret { background: #2a1e1e; color: #f87171; }
+
+  /* ── PARAMS ── */
+  .params { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0.5rem; }
+  .params th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .params td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: #9aa3ad;
+  }
+  .params td:first-child  { font-family: var(--mono); color: var(--text); font-size: 12px; }
+  .params td:nth-child(2) { font-family: var(--mono); color: #a87ef5; font-size: 12px; }
+  .params tr:last-child td { border-bottom: none; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 0.875rem 1.1rem;
+    margin: 1.25rem 0;
+    font-size: 13.5px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid;
+  }
+  .callout-icon { flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; }
+  .callout-info { background: #0c1a2e; border-color: #1e3a5a; color: #7cb9f5; }
+  .callout-warn { background: #1f1500; border-color: #3d2a00; color: #d4a017; }
+  .callout-tip  { background: #150e22; border-color: #2d1f4a; color: #a87ef5; }
+
+  /* ── FILE TREE ── */
+  .file-tree {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 2.1;
+    margin: 1rem 0;
+  }
+  .tree-dir  { color: #60a5fa; }
+  .tree-file { color: var(--text); }
+  .tree-hl   { color: var(--accent); }
+  .tree-cm   { color: var(--muted); font-style: italic; }
+  .i1 { padding-left: 1.5rem; display: block; }
+  .i2 { padding-left: 3rem; display: block; }
+  .i3 { padding-left: 4.5rem; display: block; }
+
+  /* ── STEPS ── */
+  .steps { margin: 1rem 0; }
+  .step { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-soft);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .step-title { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .step-desc  { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* ── COPY BUTTON ── */
+  .pre-wrap { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 820px) {
+    .sidebar { display: none; }
+    .main { padding: 2rem 1.25rem 5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">
+      <div class="name">Snitch</div>
+      <div class="tagline">GitHub → Discord</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Getting Started</div>
+    <a href="#overview"     class="nav-link active"><span class="nav-dot"></span>Overview</a>
+    <a href="#how-it-works" class="nav-link"><span class="nav-dot"></span>How It Works</a>
+    <a href="#installation" class="nav-link"><span class="nav-dot"></span>Installation</a>
+    <a href="#quickstart"   class="nav-link"><span class="nav-dot"></span>Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Configuration</div>
+    <a href="#cfg-tokens"   class="nav-link"><span class="nav-dot"></span>tokens.env</a>
+    <a href="#cfg-events"   class="nav-link"><span class="nav-dot"></span>events.json</a>
+    <a href="#cfg-webhooks" class="nav-link"><span class="nav-dot"></span>webhooks.json</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">API Reference</div>
+    <a href="#cls-tunnel"  class="nav-link"><span class="nav-dot"></span>Tunnel  <span class="nav-chip">class</span></a>
+    <a href="#cls-webhook" class="nav-link"><span class="nav-dot"></span>Webhook <span class="nav-chip">class</span></a>
+    <a href="#cls-client"  class="nav-link"><span class="nav-dot"></span>Client  <span class="nav-chip">class</span></a>
+    <a href="#cls-server"  class="nav-link"><span class="nav-dot"></span>Server  <span class="nav-chip">class</span></a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Customization</div>
+    <a href="#custom-events"    class="nav-link"><span class="nav-dot"></span>Custom Events</a>
+    <a href="#custom-templates" class="nav-link"><span class="nav-dot"></span>Embed Templates</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Project</div>
+    <a href="#structure" class="nav-link"><span class="nav-dot"></span>File Structure</a>
+    <a href="https://github.com/GimmyFimmy/Snitch" target="_blank" class="nav-link"><span class="nav-dot"></span>GitHub ↗</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge"><span style="color:var(--accent)">◆</span> Python · Flask · nextcord · smee.io</div>
+    <h1>Snitch</h1>
+    <p class="hero-desc">
+      A lightweight Python application that forwards GitHub webhook events to Discord channels as rich embeds — with automatic webhook management, a smee.io tunnel, and zero runtime configuration.
+    </p>
+    <div class="flow">
+      <span class="flow-node">GitHub repo</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node">smee.io tunnel</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node">Flask server</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node">Discord bot</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node">your channels</span>
+    </div>
+    <div class="hero-actions">
+      <a href="#installation" class="btn btn-primary">Get Started</a>
+      <a href="#cls-tunnel"   class="btn btn-secondary">API Reference</a>
+      <a href="https://github.com/GimmyFimmy/Snitch" target="_blank" class="btn btn-secondary">GitHub ↗</a>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section class="section" id="overview">
+    <h2>Overview</h2>
+    <p>Snitch listens to your GitHub repository and forwards events — pushes, pull requests, releases, issues, and any custom event — as formatted Discord embeds to the channel of your choice. Just call <code>Snitch()</code> and everything is automatic.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🔁</span>
+        <h4>Auto webhook lifecycle</h4>
+        <p>Registers the GitHub webhook on startup and removes it cleanly on exit via <code>atexit</code>.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🌐</span>
+        <h4>Built-in tunnelling</h4>
+        <p>Creates a smee.io tunnel automatically — no manual ngrok setup or port forwarding needed.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎨</span>
+        <h4>Customisable embeds</h4>
+        <p>Control title, description, and RGB color per event using <code>{data[...]}</code> placeholders.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📡</span>
+        <h4>Per-event routing</h4>
+        <p>Each event gets its own <code>channel_id</code>. Route pushes, issues, and releases separately.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works">
+    <h2>How It Works</h2>
+    <p>Snitch orchestrates four independent classes in a fixed boot sequence inside <code>Snitch.__init__</code>.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Tunnel — smee.io</div>
+          <div class="step-desc"><code>Tunnel()</code> fetches a fresh smee.io URL and starts <code>smee-client</code> in a background daemon thread to forward inbound requests to your local Flask server.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Webhook — GitHub REST API</div>
+          <div class="step-desc"><code>Webhook(token, payload_url)</code> registers a webhook on your repo via the GitHub API. On process exit, <code>atexit</code> fires the delete endpoint automatically — no manual cleanup needed.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Client — Discord bot</div>
+          <div class="step-desc"><code>Client(token)</code> starts a nextcord bot in a daemon thread. It reads <code>events.json</code>, builds Discord embeds from the payload data, and sends them to the configured channel.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Server — Flask</div>
+          <div class="step-desc"><code>Server()</code> starts Flask on port <code>3000</code>. It receives POST requests from the tunnel, reads the <code>X-Github-Event</code> header, and dispatches them to <code>Client.send()</code>.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALLATION -->
+  <section class="section" id="installation">
+    <h2>Installation</h2>
+    <p>Requires <strong style="color:var(--text)">Python 3.10+</strong> and <strong style="color:var(--text)">Node.js</strong> (for <code>smee-client</code>). Tested on Windows 10/11.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="cm"># 1. Enter the repo</span>
+cd /path/to/snitch
+
+<span class="cm"># 2. Create and activate a virtual environment</span>
+python -m venv .venv
+.venv\Scripts\activate        <span class="cm"># Windows</span>
+source .venv/bin/activate     <span class="cm"># macOS / Linux</span>
+
+<span class="cm"># 3. Install dependencies</span>
+pip install --upgrade pip
+pip install -r requirements.txt</code></pre>
+    </div>
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ</span>
+      <p>Node.js is installed automatically by Snitch on first run (<code>npm install --global smee-client</code>). You only need Node.js available on your PATH.</p>
+    </div>
+  </section>
+
+  <!-- QUICK START -->
+  <section class="section" id="quickstart">
+    <h2>Quick Start</h2>
+    <p>Fill in your config files, then create a <code>main.py</code> with a single line.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="cm"># main.py</span>
+<span class="kw">from</span> snitch <span class="kw">import</span> <span class="fn">Snitch</span>
+
+<span class="fn">Snitch</span>()</code></pre>
+    </div>
+    <p>On startup Snitch will print:</p>
+    <div class="pre-wrap">
+      <pre><code>[SNITCH] Connected to tunnel: https://smee.io/xK9aQr...
+[SNITCH] Created GitHub webhook with id: 489201847
+[SNITCH] Initialized Discord bot
+[SNITCH] Connected to Web-Server with port: 3000</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <p>Never commit <code>tokens.env</code> to version control. Add it to your <code>.gitignore</code> before your first commit.</p>
+    </div>
+  </section>
+
+  <!-- CONFIG: tokens.env -->
+  <section class="section" id="cfg-tokens">
+    <h2>Configuration</h2>
+    <h3>tokens.env</h3>
+    <p>Stores your GitHub and Discord tokens. Loaded automatically at startup via <code>python-dotenv</code>. Located at <code>snitch/config/tokens.env</code>.</p>
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">tokens.env</span>
+        <span class="api-sig">snitch/config/tokens.env</span>
+        <span class="tag tag-secret">secrets</span>
+      </div>
+      <div class="api-body">
+        <table class="params">
+          <tr><th>Key</th><th>Required</th><th>Description</th></tr>
+          <tr><td>GITHUB_TOKEN</td><td>yes</td><td>Personal access token with <code>admin:repo_hook</code> scope to create and delete webhooks.</td></tr>
+          <tr><td>BOT_TOKEN</td><td>yes</td><td>Discord bot token. The bot must be in your server with Send Messages permission.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>GITHUB_TOKEN=ghp_your_personal_access_token
+BOT_TOKEN=MTQ3...your_discord_bot_token</code></pre>
+    </div>
+    <div class="callout callout-tip">
+      <span class="callout-icon">✦</span>
+      <p>Do not wrap values in quotes — <code>python-dotenv</code> reads them literally and the quote characters will be included in the token string.</p>
+    </div>
+  </section>
+
+  <!-- CONFIG: events.json -->
+  <section class="section" id="cfg-events">
+    <h3>events.json</h3>
+    <p>Defines embed templates and channel routing for every GitHub event you want to handle. The key must exactly match a <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads" style="color:var(--accent)">GitHub webhook event name</a>. Events absent from this file are silently ignored.</p>
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">events.json</span>
+        <span class="api-sig">snitch/config/events.json</span>
+        <span class="tag tag-config">templates</span>
+      </div>
+      <div class="api-body">
+        <table class="params">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td>color.r / g / b</td><td>int 0–255</td><td>Global embed accent color applied to all events.</td></tr>
+          <tr><td>&lt;event&gt;.channel_id</td><td>int</td><td>Discord channel ID where this event is posted.</td></tr>
+          <tr><td>&lt;event&gt;.title</td><td>string</td><td>Embed title. Supports <code>{data[key]}</code> placeholders.</td></tr>
+          <tr><td>&lt;event&gt;.desc</td><td>string</td><td>Embed description. Supports <code>{data[key]}</code> and <code>\n</code>.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>{
+    <span class="str">"color"</span>: { <span class="str">"r"</span>: <span class="num">121</span>, <span class="str">"g"</span>: <span class="num">65</span>, <span class="str">"b"</span>: <span class="num">231</span> },
+
+    <span class="str">"push"</span>: {
+        <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+        <span class="str">"title"</span>: <span class="str">"↗ Push from {data[pusher][name]}"</span>,
+        <span class="str">"desc"</span>: <span class="str">"`Commit: {data[head_commit][message]}`\n`Forced: {data[forced]}`"</span>
+    },
+    <span class="str">"pull_request"</span>: {
+        <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+        <span class="str">"title"</span>: <span class="str">"⤵ {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}"</span>,
+        <span class="str">"desc"</span>: <span class="str">"`Number: {data[number]}`"</span>
+    },
+    <span class="str">"release"</span>: {
+        <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+        <span class="str">"title"</span>: <span class="str">"⬇ {data[release][name]} was *{data[action]}* by {data[release][author][login]}"</span>,
+        <span class="str">"desc"</span>: <span class="str">"`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`"</span>
+    },
+    <span class="str">"issues"</span>: {
+        <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+        <span class="str">"title"</span>: <span class="str">"⚠ {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}"</span>,
+        <span class="str">"desc"</span>: <span class="str">"`Id: {data[issue][id]}`"</span>
+    }
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- CONFIG: webhooks.json -->
+  <section class="section" id="cfg-webhooks">
+    <h3>webhooks.json</h3>
+    <p>Stores the GitHub API URL and request payloads used to create and delete webhooks. This file is managed automatically — you only need to update the <code>url</code> field to point at your own repository.</p>
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ</span>
+      <p>Change <code>url</code> to: <code>https://api.github.com/repos/YOUR_USER/YOUR_REPO/hooks</code></p>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>{
+    <span class="str">"url"</span>: <span class="str">"https://api.github.com/repos/your_user/your_repo/hooks"</span>,
+    <span class="str">"add"</span>: {
+        <span class="str">"headers"</span>: {
+            <span class="str">"Authorization"</span>: <span class="str">"token {github_token}"</span>,
+            <span class="str">"Accept"</span>: <span class="str">"application/vnd.github.v3+json"</span>
+        },
+        <span class="str">"payload"</span>: {
+            <span class="str">"name"</span>: <span class="str">"web"</span>,  <span class="str">"active"</span>: <span class="kw">true</span>,  <span class="str">"events"</span>: [<span class="str">"*"</span>],
+            <span class="str">"config"</span>: { <span class="str">"url"</span>: <span class="str">"{payload_url}"</span>, <span class="str">"content_type"</span>: <span class="str">"json"</span> }
+        }
+    },
+    <span class="str">"remove"</span>: {
+        <span class="str">"headers"</span>: { <span class="str">"Authorization"</span>: <span class="str">"token {github_token}"</span> }
+    }
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- API: Tunnel -->
+  <section class="section" id="cls-tunnel">
+    <h2>API Reference</h2>
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">Tunnel</span>
+        <span class="api-sig">snitch/api/tunnel.py</span>
+        <span class="tag tag-class">class</span>
+      </div>
+      <div class="api-body">
+        <p>Creates and manages a smee.io tunnel between your local server and GitHub.</p>
+        <table class="params">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>__init__()</td><td>—</td><td>Fetches a new smee.io URL via HTTP redirect. Stores it as <code>self.url</code>.</td></tr>
+          <tr><td>run()</td><td>None</td><td>Installs <code>smee-client</code> via npm and starts forwarding in a daemon thread. Logs the URL on success.</td></tr>
+          <tr><td>get_url()</td><td>str | None</td><td>Returns the smee.io URL, or <code>None</code> if the tunnel failed to initialise.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="kw">from</span> snitch.api.tunnel <span class="kw">import</span> <span class="fn">Tunnel</span>
+
+tunnel = <span class="fn">Tunnel</span>()
+tunnel.<span class="fn">run</span>()
+url = tunnel.<span class="fn">get_url</span>()  <span class="cm"># "https://smee.io/xK9aQr..."</span></code></pre>
+    </div>
+  </section>
+
+  <!-- API: Webhook -->
+  <section class="section" id="cls-webhook">
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">Webhook</span>
+        <span class="api-sig">snitch/api/webhook.py</span>
+        <span class="tag tag-class">class</span>
+      </div>
+      <div class="api-body">
+        <p>Manages the GitHub webhook lifecycle — creation on startup, automatic deletion on exit.</p>
+        <table class="params">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>__init__(token, payload_url)</td><td>—</td><td>Reads <code>webhooks.json</code>, stores the token and payload URL.</td></tr>
+          <tr><td>run()</td><td>None</td><td>POSTs to the GitHub hooks API. On success, stores the webhook ID and registers a delete call via <code>atexit</code>.</td></tr>
+        </table>
+        <table class="params" style="margin-top:0.75rem">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td>token</td><td>str</td><td>GitHub personal access token with <code>admin:repo_hook</code> scope.</td></tr>
+          <tr><td>payload_url</td><td>str</td><td>The smee.io URL the webhook will POST events to.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="kw">from</span> snitch.api.webhook <span class="kw">import</span> <span class="fn">Webhook</span>
+
+webhook = <span class="fn">Webhook</span>(token=<span class="str">"ghp_..."</span>, payload_url=<span class="str">"https://smee.io/..."</span>)
+webhook.<span class="fn">run</span>()  <span class="cm"># creates webhook, registers atexit cleanup</span></code></pre>
+    </div>
+  </section>
+
+  <!-- API: Client -->
+  <section class="section" id="cls-client">
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">Client</span>
+        <span class="api-sig">snitch/api/client.py</span>
+        <span class="tag tag-class">class</span>
+      </div>
+      <div class="api-body">
+        <p>Wraps a nextcord <code>Bot</code>. Reads <code>events.json</code> at module level and builds Discord embeds from GitHub payloads.</p>
+        <table class="params">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>__init__(token)</td><td>—</td><td>Initialises the bot with all intents, registers <code>on_ready</code> and <code>on_error</code> handlers.</td></tr>
+          <tr><td>run()</td><td>None</td><td>Starts the bot in a daemon thread via <code>run_thread</code>.</td></tr>
+          <tr><td>send(header, payload)</td><td>None</td><td>Looks up the template for <code>header</code>, builds an embed, and sends it to the configured channel ID.</td></tr>
+        </table>
+        <table class="params" style="margin-top:0.75rem">
+          <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+          <tr><td>token</td><td>str</td><td>Discord bot token.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="kw">from</span> snitch.api.client <span class="kw">import</span> <span class="fn">Client</span>
+
+client = <span class="fn">Client</span>(token=<span class="str">"MTQ3..."</span>)
+client.<span class="fn">run</span>()
+
+<span class="cm"># called internally by Server on each valid event</span>
+client.<span class="fn">send</span>(header=<span class="str">"push"</span>, payload={...})</code></pre>
+    </div>
+  </section>
+
+  <!-- API: Server -->
+  <section class="section" id="cls-server">
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">Server</span>
+        <span class="api-sig">snitch/api/server.py</span>
+        <span class="tag tag-class">class</span>
+      </div>
+      <div class="api-body">
+        <p>A Flask application that receives POST requests from the smee.io tunnel and dispatches them to the Discord client.</p>
+        <table class="params">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>__init__()</td><td>—</td><td>Initialises Flask and registers the <code>POST /</code> route internally.</td></tr>
+          <tr><td>set_handler(predicate)</td><td>None</td><td>Sets the callable invoked on each valid webhook. Must accept <code>header: str</code> and <code>payload: dict</code>.</td></tr>
+          <tr><td>run()</td><td>None</td><td>Starts Flask on port <code>3000</code>. This call blocks — it must be the last step in the boot sequence.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="kw">from</span> snitch.api.server <span class="kw">import</span> <span class="fn">Server</span>
+
+server = <span class="fn">Server</span>()
+server.<span class="fn">set_handler</span>(client.send)  <span class="cm"># wire up the Discord client</span>
+server.<span class="fn">run</span>()                       <span class="cm"># blocks — call last</span></code></pre>
+    </div>
+  </section>
+
+  <!-- CUSTOM EVENTS -->
+  <section class="section" id="custom-events">
+    <h2>Customization</h2>
+    <h3>Adding Custom Events</h3>
+    <p>Any <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads" style="color:var(--accent)">GitHub webhook event</a> can be handled by adding a matching key to <code>events.json</code>. The key must exactly match the value GitHub sends in the <code>X-Github-Event</code> header.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code><span class="cm">// events.json — add alongside existing events</span>
+<span class="str">"star"</span>: {
+    <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+    <span class="str">"title"</span>: <span class="str">"⭐ {data[sender][login]} starred {data[repository][full_name]}"</span>,
+    <span class="str">"desc"</span>: <span class="str">"`Total stars: {data[repository][stargazers_count]}`"</span>
+},
+<span class="str">"fork"</span>: {
+    <span class="str">"channel_id"</span>: <span class="num">123456789012345678</span>,
+    <span class="str">"title"</span>: <span class="str">"🍴 {data[sender][login]} forked {data[repository][full_name]}"</span>,
+    <span class="str">"desc"</span>: <span class="str">"`Forks: {data[repository][forks_count]}`"</span>
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- EMBED TEMPLATES -->
+  <section class="section" id="custom-templates">
+    <h3>Embed Templates</h3>
+    <p>Title and description strings use Python's <code>str.format()</code> syntax. The full GitHub webhook payload is available as <code>data</code>.</p>
+    <div class="api-card">
+      <div class="api-header">
+        <span class="api-name">Placeholder syntax</span>
+        <span class="tag tag-config">reference</span>
+      </div>
+      <div class="api-body">
+        <table class="params">
+          <tr><th>Syntax</th><th>Description</th></tr>
+          <tr><td>{data[key]}</td><td>Top-level payload field, e.g. <code>{data[action]}</code>.</td></tr>
+          <tr><td>{data[key][nested]}</td><td>Nested field, e.g. <code>{data[pusher][name]}</code>.</td></tr>
+          <tr><td>\n</td><td>Line break inside the embed description.</td></tr>
+          <tr><td>`text`</td><td>Discord inline code — wrapping values in backticks improves readability.</td></tr>
+        </table>
+      </div>
+    </div>
+    <p>See the <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads" style="color:var(--accent)">GitHub webhook payload reference</a> for available fields per event.</p>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section class="section" id="structure">
+    <h2>File Structure</h2>
+    <div class="file-tree">
+      <span class="tree-dir">snitch/</span>
+      <span class="i1"><span class="tree-dir">config/</span></span>
+      <span class="i2"><span class="tree-hl">tokens.env</span>     <span class="tree-cm">← secrets — never commit</span></span>
+      <span class="i2"><span class="tree-hl">events.json</span>    <span class="tree-cm">← embed templates + channel IDs</span></span>
+      <span class="i2"><span class="tree-file">webhooks.json</span>  <span class="tree-cm">← GitHub API config (auto-managed)</span></span>
+      <span class="i1" style="margin-top:4px"><span class="tree-dir">api/</span></span>
+      <span class="i2"><span class="tree-file">tunnel.py</span>      <span class="tree-cm">← smee.io tunnel</span></span>
+      <span class="i2"><span class="tree-file">webhook.py</span>     <span class="tree-cm">← GitHub webhook lifecycle</span></span>
+      <span class="i2"><span class="tree-file">client.py</span>      <span class="tree-cm">← Discord bot + embed builder</span></span>
+      <span class="i2"><span class="tree-file">server.py</span>      <span class="tree-cm">← Flask server, POST /</span></span>
+      <span class="i2" style="margin-top:4px"><span class="tree-dir">utils/</span></span>
+      <span class="i3"><span class="tree-file">__env.py</span>       <span class="tree-cm">← reads tokens.env</span></span>
+      <span class="i3"><span class="tree-file">__json.py</span>      <span class="tree-cm">← JSON reader + Flask response helper</span></span>
+      <span class="i3"><span class="tree-file">__logger.py</span>    <span class="tree-cm">← log_ok / log_err</span></span>
+      <span class="i3"><span class="tree-file">__requests.py</span>  <span class="tree-cm">← HTTP helpers (POST, DELETE, redirect)</span></span>
+      <span class="i3"><span class="tree-file">__thread.py</span>    <span class="tree-cm">← thread + coroutine helpers</span></span>
+      <span class="i1" style="margin-top:4px"><span class="tree-hl">__init__.py</span>    <span class="tree-cm">← Snitch() entrypoint</span></span>
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>Snitch · Python · Flask · nextcord</span>
+    <span>
+      <a href="https://github.com/GimmyFimmy/Snitch" target="_blank">GitHub</a> ·
+      <a href="https://github.com/GimmyFimmy/Snitch/releases" target="_blank">Releases</a> ·
+      <a href="https://github.com/GimmyFimmy/Snitch/issues" target="_blank">Issues</a>
+    </span>
+  </div>
+
+</main>
+</div>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+  document.querySelectorAll('section[id], div[id]').forEach(section => {
+    new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => {
+            l.classList.remove('active');
+            if (l.getAttribute('href') === '#' + e.target.id) l.classList.add('active');
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' }).observe(section);
+  });
+</script>
+</body>
+</html>
