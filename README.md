@@ -7,6 +7,8 @@
 [![Flask](https://img.shields.io/badge/server-Flask-f87171?style=flat-square)]()
 [![Discord](https://img.shields.io/badge/bot-nextcord-a87ef5?style=flat-square)]()
 
+</div>
+
 Snitch forwards GitHub webhook events to Discord channels as rich embeds. It registers a webhook on your repository at startup, tunnels incoming requests via smee.io, and removes the webhook automatically on exit.
 
 Instead of manually setting up webhooks, ngrok tunnels, and Discord bots separately, you drop two config files and call `Snitch()`. Everything else is handled for you.
