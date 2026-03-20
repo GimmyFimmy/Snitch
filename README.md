@@ -17,8 +17,8 @@ GitHub repo ──► smee.io tunnel ──► Flask server ──► Discord bo
 
 ## Example
 
+`your_code.py`
 ```python
-# main.py
 from snitch import Snitch
 
 Snitch()
