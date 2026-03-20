@@ -1,16 +1,76 @@
-# ![Snitch](docs/banner.png)
+# Snitch
 
-> Forward GitHub events to Discord channels — zero config beyond tokens and a JSON file.
+[![Documentation](https://img.shields.io/badge/docs-online-7941e7?style=flat-square)](https://GimmyFimmy.github.io/Snitch/)
+[![Python](https://img.shields.io/badge/language-Python-60a5fa?style=flat-square)]()
+[![Flask](https://img.shields.io/badge/server-Flask-f87171?style=flat-square)]()
+[![Discord](https://img.shields.io/badge/bot-nextcord-a87ef5?style=flat-square)]()
+
+![banner](docs/banner.png)
+
+Snitch forwards GitHub webhook events to Discord channels as rich embeds. It registers a webhook on your repository at startup, tunnels incoming requests via smee.io, and removes the webhook automatically on exit.
+
+Instead of manually setting up webhooks, ngrok tunnels, and Discord bots separately, you drop two config files and call `Snitch()`. Everything else is handled for you.
+
+```
+GitHub repo ──► smee.io tunnel ──► Flask server ──► Discord bot ──► your channels
+```
 
 ---
 
-## How it works
+## Example
+
+```python
+# main.py
+from snitch import Snitch
+
+Snitch()
+```
+
+```json
+// snitch/config/events.json
+{
+    "color": { "r": 121, "g": 65, "b": 231 },
+
+    "push": {
+        "channel_id": 123456789012345678,
+        "title": "↗ Push from {data[pusher][name]}",
+        "desc": "`Commit: {data[head_commit][message]}`\n`Forced: {data[forced]}`"
+    },
+    "issues": {
+        "channel_id": 123456789012345678,
+        "title": "⚠ {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
+        "desc": "`Id: {data[issue][id]}`"
+    }
+}
+```
+
+Add any [GitHub event name](https://docs.github.com/en/webhooks/webhook-events-and-payloads) as a key. Use `{data[...]}` to reference fields from the payload. Events without a matching key are silently ignored.
+
+For the full API reference, configuration options, and more examples, see the **[documentation](https://GimmyFimmy.github.io/Snitch/)**.
+
+---
+
+## Project structure
 
 ```
-GitHub repo → smee.io tunnel → Flask server → Discord bot → your channels
+snitch/
+├── config/
+│   ├── tokens.env          ← secrets, never commit
+│   ├── events.json         ← embed templates + channel IDs
+│   └── webhooks.json       ← GitHub API config (auto-managed)
+├── api/
+│   ├── tunnel.py           ← smee.io tunnel
+│   ├── webhook.py          ← GitHub webhook lifecycle
+│   ├── client.py           ← Discord bot + embed builder
+│   ├── server.py           ← Flask server, POST /
+│   └── utils/
+│       ├── __env.py
+│       ├── __json.py
+│       ├── __logger.py
+│       ├── __requests.py
+│       └── __thread.py
+└── __init__.py             ← Snitch() entrypoint
 ```
-
-Snitch automatically creates a GitHub webhook for your repository on startup and removes it on exit. Events are forwarded as Discord embeds to whichever channels you configure in `events.json`.
 
 ---
 
@@ -22,113 +82,16 @@ Snitch automatically creates a GitHub webhook for your repository on startup and
 
 ---
 
-## Installation
+## Contributing
 
-```bash
-# 1. Enter the repository
-cd /path/to/snitch
+Contributions are welcome. If you find a bug, have a feature idea, or want to improve the docs, feel free to open an issue or a pull request.
 
-# 2. Create and activate a virtual environment
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # macOS / Linux
+A few things to keep in mind before submitting:
 
-# 3. Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+- **Keep it small.** Snitch is intentionally minimal. New features should solve a clear problem that can't already be handled by editing the config.
 
----
+- **Match the style.** Use the `__` prefix for private methods and attributes, keep utilities in `snitch/api/utils/`, and follow the existing class-per-responsibility pattern.
 
-## Configuration
+- **One thing per PR.** Focused pull requests are easier to review and faster to merge.
 
-All config lives in `snitch/config/`.
-
-### 1. `tokens.env` — your secrets
-
-```env
-GITHUB_TOKEN=your_github_personal_access_token
-BOT_TOKEN=your_discord_bot_token
-```
-
-> How to create a Discord bot and get a token: [discord.py docs](https://discordpy.readthedocs.io/en/stable/discord.html)
-
-> **Never commit this file.** Add `tokens.env` to your `.gitignore`.
-
-### 2. `events.json` — event templates and channel routing
-
-Each event key must match a [GitHub webhook event name](https://docs.github.com/en/webhooks/webhook-events-and-payloads) exactly. Set `channel_id` to the Discord channel where that event should be posted. The `color` block controls the embed accent color across all events.
-
-```json
-{
-    "color": {
-        "r": 255,
-        "g": 255,
-        "b": 255
-    },
-    "push": {
-        "channel_id": 123456789,
-        "title": "↗ Push from {data[pusher][name]}",
-        "desc": "`Commit Messages: {data[head_commit][message]}`\n`Forced: {data[forced]}`"
-    },
-    "pull_request": {
-        "channel_id": 123456789,
-        "title": "⤵ {data[pull_request][title]} was *{data[action]}* by {data[sender][login]}",
-        "desc": "`Number: {data[number]}`"
-    },
-    "release": {
-        "channel_id": 123456789,
-        "title": "⬇ {data[release][name]} was *{data[action]}* by {data[release][author][login]}",
-        "desc": "`Pre Release: {data[release][prerelease]}`\n`Id: {data[release][id]}`"
-    },
-    "issues": {
-        "channel_id": 123456789,
-        "title": "⚠ {data[issue][title]} was *{data[action]}* by {data[issue][user][login]}",
-        "desc": "`Id: {data[issue][id]}`"
-    }
-}
-```
-
-Use `{data[...]}` to reference any field from the GitHub webhook payload. Use `\n` for line breaks in `desc`. You can add or remove events freely — any key not in this file is silently ignored.
-
----
-
-## Usage
-
-```python
-from snitch import Snitch
-
-Snitch()
-```
-
-That's it. `Snitch.__init__` reads tokens from `tokens.env`, spins up the smee.io tunnel, registers the GitHub webhook, starts the Discord bot, and runs the Flask server — all in the right order, with cleanup on exit.
-
----
-
-## Project structure
-
-```
-snitch/
-├── config/
-│   ├── tokens.env          # GitHub + Discord tokens (never commit this)
-│   ├── events.json         # Event templates, channel IDs, embed color
-│   └── webhooks.json       # Webhook URL + payload config (auto-managed)
-├── api/
-│   ├── tunnel.py           # Creates smee.io tunnel, exposes payload URL
-│   ├── webhook.py          # Registers and removes GitHub webhook
-│   ├── client.py           # Discord bot, embed builder, message sender
-│   ├── server.py           # Flask server, routes POST /
-│   └── utils/
-│       ├── __env.py        # Reads tokens from tokens.env
-│       ├── __json.py       # JSON config reader + Flask response helper
-│       ├── __logger.py     # Colored terminal logging (log_ok, log_err)
-│       ├── __requests.py   # HTTP helpers (POST, DELETE, redirect)
-│       └── __thread.py     # Thread + coroutine helpers
-└── __init__.py             # Snitch() entrypoint — orchestrates everything
-```
-
----
-
-## Contribution
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+If you're unsure whether an idea fits, open an issue first and we can discuss it before you write any code.
